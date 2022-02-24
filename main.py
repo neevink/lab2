@@ -16,6 +16,7 @@ from graph import show_2d
 A, B, C, D = 1, -4.5, -9.21, -0.383
 f = lambda x: A * x ** 3 + B * x ** 2 + C * x + D
 df = lambda x: 3 * A * x ** 2 + 2 * B * x + C
+ddf = lambda x: 6 * A * x + 2 * B
 
 
 def phi(x):
@@ -27,8 +28,23 @@ def phi(x):
 
 def non_linear(output_file):
     left, right = map(float, input('Границы левого корня через пробел (-2 -1): ').split())
-    c_x0 = float(input('Нулевое приближение центрального корня (0): '))
-    r_x0 = float(input('Нулевое приближение правого корня (5): '))
+    #c_x0 = float(input('Нулевое приближение центрального корня (0): '))
+
+    a, b = map(float, input('Границы для второго корня: (-1, 1): ').split())
+    if f(a) * ddf(a) > 0:
+        c_x0 = a
+    else:
+        c_x0 = b
+
+    print(f'x0 для второго корня равен равен: {c_x0}')
+
+    # r_x0 = float(input('Нулевое приближение правого корня (5): '))
+    a1, b1 = map(float, input('Границы для правого корня: (4, 6): ').split())
+    if f(a1) * ddf(a1) > 0:
+        r_x0 = a1
+    else:
+        r_x0 = b1
+
     epsilon = float(input('Погрешность (0.01): '))
 
     left_x = horde_method(f, left=left, right=right, epsilon=epsilon)
@@ -37,9 +53,12 @@ def non_linear(output_file):
 
     show_2d(f, [(left_x.root, 0), (center_x.root, 0), (right_x.root, 0)])
 
-    print(f'Левый корень x_0={left_x.root:.3f}')
-    print(f'Центральный корень x_1={center_x.root:.3f}')
-    print(f'Правый корень x_2={right_x.root:.3f}')
+    print(f'Левый корень x_0={left_x.root:.7f}, знач-e: {left_x.znach_f:.7f}, n: {left_x.iter_count}')
+    # Значение функции + количество итераций
+    print(f'Центральный корень x_1={center_x.root:.7f}, знач-e: {left_x.znach_f:.7f}, n: {left_x.iter_count}')
+    # Значение функции + количество итераций
+    print(f'Правый корень x_2={right_x.root:.7f}, знач-e: {left_x.znach_f:.7f}, n: {left_x.iter_count}')
+    # Значение функции + количество итераций
 
     print(f'Таблица для метода хорд:')
     print(left_x)
