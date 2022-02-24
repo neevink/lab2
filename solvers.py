@@ -24,10 +24,10 @@ class Result:
 
 @dataclass
 class SystemResult:
-    iteration: int
-    solved: bool
-    roots: List[float] = field(factory=list)
-    errors: List[float] = field(factory=list)
+    iteration: int = field(default=0)
+    solved: bool = field(default=False)
+    roots: list = field(factory=list)
+    errors: list = field(factory=list)
 
 
 def horde_method(f: Callable, left: float, right: float, fix=-1, epsilon=10e-3):
@@ -54,21 +54,21 @@ def horde_method(f: Callable, left: float, right: float, fix=-1, epsilon=10e-3):
     return res
 
 
-#def newton_method(y: Callable, df: Callable, x0: float, epsilon=10e-3):
-#    res = Result(header="№ x_k f(x_k) f'(x_k) x_{k+1} |x_k-x_{k+1}|".split())
-#
-#    for i in range(1, MAX_ITER_COUNT + 1):
-#        x1 = x0 - y(x0) / df(x0)
-#        res.data.append([i, x0, y(x0), df(x0), x1, abs(x1 - x0)])
-#
-#        if abs(x1 - x0) <= epsilon or abs(y(x1) / df(x1)) <= epsilon or abs(y(x1)) <= epsilon:
-#            res.root = x1
-#            res.error = abs(x1 - x0)
-#            break
-#
-#        x0 = x1
-#
-#    return res
+def newton_method(y: Callable, df: Callable, x0: float, epsilon=10e-3):
+    res = Result(header="№ x_k f(x_k) f'(x_k) x_{k+1} |x_k-x_{k+1}|".split())
+
+    for i in range(1, MAX_ITER_COUNT + 1):
+        x1 = x0 - y(x0) / df(x0)
+        res.data.append([i, x0, y(x0), df(x0), x1, abs(x1 - x0)])
+
+        if abs(x1 - x0) <= epsilon or abs(y(x1) / df(x1)) <= epsilon or abs(y(x1)) <= epsilon:
+            res.root = x1
+            res.error = abs(x1 - x0)
+            break
+
+        x0 = x1
+
+    return res
 
 
 def simple_iteration_method(f: Callable, phi: Callable, x0=1, epsilon=10e-3):
@@ -88,40 +88,39 @@ def simple_iteration_method(f: Callable, phi: Callable, x0=1, epsilon=10e-3):
         x0 = x1
     return res
 
-# Example from the video:
-# from youtube https://www.youtube.com/watch?v=zPDp_ewoyhM
 
-# TODO FROM HERE: https://stackoverflow.com/questions/52020775/solving-a-non-linear-system-of-equations-in-python-using-newtons-method
-
-
-def x_delta_by_gauss(J, b):
-    return np.linalg.solve(J, b)
-
-def x_plus_1(x_delta, x_previous):
+def _x_plus_1(x_delta, x_previous):
     x_next = x_previous + x_delta
     return x_next
 
-def newton_method(f, jack, x_init):
+
+def _newton_method(f, jack, x_init):
     jacobian = jack(*x_init)
     vector_b_f_output = f(*x_init)
-    x_delta = x_delta_by_gauss(jacobian, vector_b_f_output)
+    x_delta = np.linalg.solve(jacobian, vector_b_f_output)
     x_plus_1 = x_delta + x_init
     return x_plus_1
 
-def iterative_newton(f, jack, x_init, epsilon):
-    counter = 0
+
+def system_newton_method(f, jack, x_init, epsilon):
+    result = SystemResult()
+
     x_old = x_init
-    x_new = newton_method(f, jack, x_old)
+    x_new = _newton_method(f, jack, x_old)
     diff = np.linalg.norm(x_old-x_new)
 
-    while diff > epsilon:
-        counter += 1
-        x_new = newton_method(f, jack, x_old)
+    while diff > epsilon or result.iteration == MAX_ITER_COUNT:
+        x_new = _newton_method(f, jack, x_old)
         diff = np.linalg.norm(x_old-x_new)
         x_old = x_new
+        result.iteration += 1
     convergent_val = x_new
-    return convergent_val
 
+    if result.iteration != MAX_ITER_COUNT:
+        result.solved = True
 
-def system_newton_method(fun, jacobian, x_init, epsilon=0.001):
-    print(list(map(float, (iterative_newton(fun, jacobian, x_init, epsilon)))))
+    result.roots = convergent_val
+
+    # print(list(map(float, convergent_val)))
+
+    return result

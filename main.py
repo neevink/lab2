@@ -7,16 +7,15 @@
 # 5 - Метод простой итерации
 # 6 - Метод Ньютона
 
-from math import sin, exp
 
 import numpy as np
 
-from solvers import horde_method, newton_method, simple_iteration_method, system_newton_method, iterative_newton
+from solvers import horde_method, newton_method, simple_iteration_method, system_newton_method
 from graph import show_2d
 
 A, B, C, D = 1, -4.5, -9.21, -0.383
-y = lambda x: A * x ** 3 + B * x ** 2 + C * x + D
-dy = lambda x: 3*A * x ** 2 + 2*B * x + C
+f = lambda x: A * x ** 3 + B * x ** 2 + C * x + D
+df = lambda x: 3 * A * x ** 2 + 2 * B * x + C
 
 
 def phi(x):
@@ -32,11 +31,11 @@ def non_linear():
     r_x0 = float(input('Нулевое приближение правого корня (5): '))
     epsilon = float(input('Погрешность (0.01): '))
 
-    left_x = horde_method(y, left=left, right=right, epsilon=epsilon)
-    center_x = newton_method(y, dy, c_x0, epsilon=epsilon)
-    right_x = simple_iteration_method(y, phi, r_x0, epsilon=epsilon)
+    left_x = horde_method(f, left=left, right=right, epsilon=epsilon)
+    center_x = newton_method(f, df, c_x0, epsilon=epsilon)
+    right_x = simple_iteration_method(f, phi, r_x0, epsilon=epsilon)
 
-    show_2d(y, [(left_x.root, 0), (center_x.root, 0), (right_x.root, 0)])
+    show_2d(f, [(left_x.root, 0), (center_x.root, 0), (right_x.root, 0)])
 
     print(f'Левый корень x_0={left_x.root:.3f}')
     print(f'Центральный корень x_1={center_x.root:.3f}')
@@ -52,19 +51,20 @@ def non_linear():
     print(right_x)
 
 
-def jacobian_example(xy):
-    x, y = xy
+def function_example(x, y):
+    return [
+        (-1)*(x+(2*y)-2),
+        (-1)*((x**2)+(4*(y**2))-4)
+    ]
+
+
+
+def jacobian_example(x, y):
     return [
         [1, 2],
         [2*x, 8*y]
     ]
 
-def function_example(xy):
-    x, y = xy
-    return [
-        (-1)*(x+(2*y)-2),
-        (-1)*((x**2)+(4*(y**2))-4)
-    ]
 
 def function_exercise(x, y, z):
     return [
@@ -74,42 +74,48 @@ def function_exercise(x, y, z):
     ]
 
 
-def jacobian_exercise(x,y,z):
-    return [[1, 1, 1],[2*x,2*y,2*z],[np.exp(x),x,-x]]
+def jacobian_exercise(x, y, z):
+    return [[1, 1, 1], [2*x,2*y,2*z],[np.exp(x),x,-x]]
+
 
 FUNCTIONS = [
     {
         'disp': 'f1(x1, x2) = x + 2*y - 2\nf2(x1, x2) = x^2 + 4*y^2 - 4)',
         'func': function_example,
         'jacob': jacobian_example,
+        'init': [1, 1],
     },
     {
-        'disp': 'f1(x1, x2) = x + 2*y - 2\nf2(x1, x2) = x^2 + 4*y^2 - 4)',
-        'func': function_example,
-        'jacob': jacobian_example,
+        'disp': 'f1(x1, x2, x3) = x + y + z - 3\nf2(x1, x2, x3) = x^2 + y^2 + z^2 - 5\nf3(x1, x2, x3) = exp(x) + x*y - x*z -1',
+        'func': function_exercise,
+        'init': [1, 1, 1],
     },
 ]
 
+
 def non_linear_system():
+    print(f'Выберите систему нелинейных уравнений:')
     for i, group in enumerate(FUNCTIONS, 1):
-        print(f'Выберите функцию №{i}')
+        print(f'Функция №{i}')
         print(group['disp'])
+        print()
     n = int(input())
-    funcs = FUNCTIONS[n - 1]['func']
+    f = FUNCTIONS[n - 1]['func']
+    hint = FUNCTIONS[n-1]['init']
     jacob = FUNCTIONS[n - 1]['jacob']
 
-    x0 = list(map(float, input('Начальные приближения (1, 2): ').split()))
+    x0 = list(map(float, input(f'Начальные приближения ({hint}): ').split()))
     eps = float(input('Погрешность (0.001):'))
 
-    res = system_newton_method(function_exercise, jacobian_exercise, [100, 200, 3], 0.001)
-    print(res)
+    res = system_newton_method(f, jacob, x0, eps)
+    # print(res)
 
-    # if res.solved:
-    #     print('Решение: ' + ' '.join(f'{x:.3f}' for x in res.roots))
-    #     print('Погрешности: ' + ' '.join(str(x) for x in res.errors))
-    #     print(f'Количество итераций {res.iteration}')
-    # else:
-    #     print('Решений не найдено!')
+    if res.solved:
+        print('Решение: ' + ' '.join(f'{x:.3f}' for x in res.roots))
+        print('Погрешности: ' + ' '.join(str(x) for x in res.errors))
+        print(f'Количество итераций {res.iteration}')
+    else:
+        print('Решений не найдено!')
 
     # bx = abs(min(res.roots)) + 1
     # show_graph_3d(bx, 0, y, [])
