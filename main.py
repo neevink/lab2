@@ -9,6 +9,8 @@
 
 from math import sin, exp
 
+import numpy as np
+
 from solvers import horde_method, newton_method, simple_iteration_method, system_newton_method, iterative_newton
 from graph import show_2d
 
@@ -64,6 +66,17 @@ def function_example(xy):
         (-1)*((x**2)+(4*(y**2))-4)
     ]
 
+def function_exercise(x, y, z):
+    return [
+        (-1)*(x+y+z-3),
+        (-1)*((x**2)+(y**2)+(z**2)-5),
+        (-1)*((np.exp(x))+(x*y)-(x*z)-1)
+    ]
+
+
+def jacobian_exercise(x,y,z):
+    return [[1, 1, 1],[2*x,2*y,2*z],[np.exp(x),x,-x]]
+
 FUNCTIONS = [
     {
         'disp': 'f1(x1, x2) = x + 2*y - 2\nf2(x1, x2) = x^2 + 4*y^2 - 4)',
@@ -88,7 +101,7 @@ def non_linear_system():
     x0 = list(map(float, input('Начальные приближения (1, 2): ').split()))
     eps = float(input('Погрешность (0.001):'))
 
-    res = system_newton_method(fun=funcs, jacobian=jacob, x_init=x0, epsilon=eps)
+    res = system_newton_method(function_exercise, jacobian_exercise, [100, 200, 3], 0.001)
     print(res)
 
     # if res.solved:
