@@ -29,19 +29,22 @@ class SystemResult:
     roots: list = field(factory=list)
     errors: list = field(factory=list)
 
+    def __str__(self):
+        if self.solved:
+            return 'Решение: ' + ' '.join(f'{x:.3f}' for x in self.roots) + '\n' + \
+            'Погрешности: ' + ' '.join(str(x) for x in self.errors) + '\n' + \
+            f'Количество итераций {self.iteration}\n'
+        else:
+            return 'Решений не найдено!'
+
 
 def horde_method(f: Callable, left: float, right: float, fix=-1, epsilon=10e-3):
-    res = Result(header='№ a b x f(a) f(b) f(x) |a-b|'.split())
-
+    res = Result(header=['№', 'a', 'b', 'x', 'f(a)', 'f(b)', 'f(x)', '|a-b|'])
     x0 = left if fix == -1 else right
 
     for i in range(1, MAX_ITER_COUNT + 1):
         x1 = (left * f(right) - right * f(left)) / (f(right) - f(left))
-
-        res.data.append([
-            i, left, right, x1, f(left), f(right), f(x1), abs(left - right)
-        ])
-
+        res.data.append([i, left, right, x1, f(left), f(right), f(x1), abs(left - right)])
         if abs(x1 - x0) <= epsilon or abs(f(x1)) <= epsilon:
             res.root = x1
             res.error = abs(x1 - x0)
@@ -55,7 +58,7 @@ def horde_method(f: Callable, left: float, right: float, fix=-1, epsilon=10e-3):
 
 
 def newton_method(y: Callable, df: Callable, x0: float, epsilon=10e-3):
-    res = Result(header="№ x_k f(x_k) f'(x_k) x_{k+1} |x_k-x_{k+1}|".split())
+    res = Result(header=['№', 'x_k', 'f(x_k)', "f'(x_k)", 'x_{k+1}', '|x_k-x_{k+1}|'])
 
     for i in range(1, MAX_ITER_COUNT + 1):
         x1 = x0 - y(x0) / df(x0)
@@ -72,7 +75,7 @@ def newton_method(y: Callable, df: Callable, x0: float, epsilon=10e-3):
 
 
 def simple_iteration_method(f: Callable, phi: Callable, x0=1, epsilon=10e-3):
-    res = Result(header="№ x_k f(x_k) x_{k+1} phi(x_k) |x_k-x_{k+1}|".split())
+    res = Result(header=['№', 'x_k', 'f(x_k)', 'x_{k+1}', 'phi(x_k)', '|x_k-x_{k+1}|'])
 
     for i in range(1, MAX_ITER_COUNT + 1):
         x1 = phi(x0)
@@ -120,7 +123,4 @@ def system_newton_method(f, jack, x_init, epsilon):
         result.solved = True
 
     result.roots = convergent_val
-
-    # print(list(map(float, convergent_val)))
-
     return result

@@ -25,7 +25,7 @@ def phi(x):
     return base ** (1 / 3)
 
 
-def non_linear():
+def non_linear(output_file):
     left, right = map(float, input('Границы левого корня через пробел (-2 -1): ').split())
     c_x0 = float(input('Нулевое приближение центрального корня (0): '))
     r_x0 = float(input('Нулевое приближение правого корня (5): '))
@@ -50,23 +50,33 @@ def non_linear():
     print('Таблица для метода простой итерации:')
     print(right_x)
 
+    if output_file != None:
+        with open(output_file, 'a') as fl:
+            fl.write(f'Таблица для метода хорд:')
+            fl.write(str(left_x))
 
-def function_example(x, y):
+            fl.write('Таблица для метода Ньютана:')
+            fl.write(str(center_x))
+
+            fl.write('Таблица для метода простой итерации:')
+            fl.write(str(right_x))
+
+
+def function_1(x, y):
     return [
         (-1)*(x+(2*y)-2),
         (-1)*((x**2)+(4*(y**2))-4)
     ]
 
 
-
-def jacobian_example(x, y):
+def jacobian_1(x, y):
     return [
         [1, 2],
         [2*x, 8*y]
     ]
 
 
-def function_exercise(x, y, z):
+def function_2(x, y, z):
     return [
         (-1)*(x+y+z-3),
         (-1)*((x**2)+(y**2)+(z**2)-5),
@@ -74,26 +84,27 @@ def function_exercise(x, y, z):
     ]
 
 
-def jacobian_exercise(x, y, z):
-    return [[1, 1, 1], [2*x,2*y,2*z],[np.exp(x),x,-x]]
+def jacobian_2(x, y, z):
+    return [[1, 1, 1], [2*x, 2*y, 2*z], [np.exp(x), x, -x]]
 
 
 FUNCTIONS = [
     {
         'disp': 'f1(x1, x2) = x + 2*y - 2\nf2(x1, x2) = x^2 + 4*y^2 - 4)',
-        'func': function_example,
-        'jacob': jacobian_example,
+        'func': function_1,
+        'jacob': jacobian_1,
         'init': [1, 1],
     },
     {
         'disp': 'f1(x1, x2, x3) = x + y + z - 3\nf2(x1, x2, x3) = x^2 + y^2 + z^2 - 5\nf3(x1, x2, x3) = exp(x) + x*y - x*z -1',
-        'func': function_exercise,
-        'init': [1, 1, 1],
+        'func': function_2,
+        'jacob': jacobian_2,
+        'init': [100, 200, 3],
     },
 ]
 
 
-def non_linear_system():
+def non_linear_system(output_file):
     print(f'Выберите систему нелинейных уравнений:')
     for i, group in enumerate(FUNCTIONS, 1):
         print(f'Функция №{i}')
@@ -105,25 +116,27 @@ def non_linear_system():
     jacob = FUNCTIONS[n - 1]['jacob']
 
     x0 = list(map(float, input(f'Начальные приближения ({hint}): ').split()))
-    eps = float(input('Погрешность (0.001):'))
+    eps = float(input('Погрешность (0.001): '))
 
     res = system_newton_method(f, jacob, x0, eps)
-    # print(res)
 
-    if res.solved:
-        print('Решение: ' + ' '.join(f'{x:.3f}' for x in res.roots))
-        print('Погрешности: ' + ' '.join(str(x) for x in res.errors))
-        print(f'Количество итераций {res.iteration}')
-    else:
-        print('Решений не найдено!')
-
-    # bx = abs(min(res.roots)) + 1
-    # show_graph_3d(bx, 0, y, [])
-
+    print(res)
+    if output_file != None:
+        with open(output_file, 'a') as fl:
+            fl.write(f'Решение системы нелинейных уравнений:')
+            fl.write(str(res))
 
 def main():
-    # non_linear()
-    non_linear_system()
+    read_from_file = input('Нужно ли записать результат в файл (y/n): ')
+    output_file = None
+    if(read_from_file == 'y'):
+        output_file = input('Введите название файла (out.txt): ')
+
+
+    print('Решение нелейного уравнения: ')
+    non_linear(output_file)
+    print('Решение системы нелинейных уравнений: ')
+    non_linear_system(output_file)
 
 
 if __name__ == '__main__':
