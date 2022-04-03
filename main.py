@@ -8,6 +8,8 @@
 # 6 - Метод Ньютона
 
 
+from math import sqrt
+
 import numpy as np
 
 from solvers import horde_method, newton_method, simple_iteration_method, system_newton_method
@@ -17,6 +19,10 @@ A, B, C, D = 1, -4.5, -9.21, -0.383
 f = lambda x: A * x ** 3 + B * x ** 2 + C * x + D
 df = lambda x: 3 * A * x ** 2 + 2 * B * x + C
 ddf = lambda x: 6 * A * x + 2 * B
+
+
+def dphi(x):
+    return abs(sqrt(1/A) / 3 * (B * x**2 + C * x + D) ** (-2/3) * (2*B*x + C))
 
 
 def phi(x):
@@ -45,6 +51,9 @@ def non_linear(output_file):
     else:
         r_x0 = b1
 
+    print(f'dpfi в a1 = {dphi(a1)}')
+    print(f'dpfi в b1 = {dphi(b1)}')
+
     epsilon = float(input('Погрешность (0.01): '))
 
     left_x = horde_method(f, left=left, right=right, epsilon=epsilon)
@@ -55,9 +64,9 @@ def non_linear(output_file):
 
     print(f'Левый корень x_0={left_x.root:.7f}, знач-e: {left_x.znach_f:.7f}, n: {left_x.iter_count}')
     # Значение функции + количество итераций
-    print(f'Центральный корень x_1={center_x.root:.7f}, знач-e: {left_x.znach_f:.7f}, n: {left_x.iter_count}')
+    print(f'Центральный корень x_1={center_x.root:.7f}, знач-e: {center_x.znach_f:.7f}, n: {center_x.iter_count}')
     # Значение функции + количество итераций
-    print(f'Правый корень x_2={right_x.root:.7f}, знач-e: {left_x.znach_f:.7f}, n: {left_x.iter_count}')
+    print(f'Правый корень x_2={right_x.root:.7f}, знач-e: {right_x.znach_f:.7f}, n: {right_x.iter_count}')
     # Значение функции + количество итераций
 
     print(f'Таблица для метода хорд:')
@@ -126,7 +135,7 @@ FUNCTIONS = [
 def non_linear_system(output_file):
     print(f'Выберите систему нелинейных уравнений:')
     for i, group in enumerate(FUNCTIONS, 1):
-        print(f'Функция №{i}')
+        print(f'Система №{i}')
         print(group['disp'])
         print()
     n = int(input())
